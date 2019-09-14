@@ -1,0 +1,36 @@
+{
+  "name": "watch-agent",
+  "version": "1.0.0",
+  "description": "Make your agents on command line.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/encryptorcode/watch-agent.git"
+  },
+  "keywords": [
+    "agent",
+    "monitoring",
+    "command"
+  ],
+  "author": "Abhay Jatin Doshi <ajd1996@hotmail.com> (https://encryptorcode.wordpress.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/encryptorcode/watch-agent/issues"
+  },
+  "homepage": "https://github.com/encryptorcode/watch-agent#readme",
+  "preferGlobal": true,
+  "bin": {
+    "wa": "index.js"
+  },
+  "dependencies": {
+    "chalk": "^2.4.2",
+    "child_process": "^1.0.2",
+    "commander": "^3.0.1",
+    "fs": "0.0.1-security",
+    "mkdirp": "^0.5.1",
+    "os": "^0.1.1",
+    "path": "^0.12.7",
+    "process": "^0.11.10",
+    "readline": "^1.3.0"
+  }
+}
