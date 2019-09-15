@@ -1,6 +1,7 @@
 const chalk = require('chalk');
 const common = require('./common');
 const child_process = require('child_process');
+const handler = require('./handler');
 
 module.exports = {
     init: (moduleName, delay, times, args) => {
@@ -15,11 +16,11 @@ module.exports = {
             times: times,
             status: 'INITIATED'
         }
-        let forkedProcess = child_process.fork('./src/forked_process.js', [moduleName, JSON.stringify(record)], { detached: true });
-        console.log(chalk.green('\u2714 Agent initiated for ' + moduleName + '.\npid: ' + forkedProcess.pid));
+        let forkedProcess = child_process.fork('./src/forked_process.js', [moduleName, JSON.stringify(record)], { detached: true });        
         forkedProcess.on('message', record => {
+            console.log(chalk.green('\u2714 ' + moduleName + ' agent started.\npid: ' + forkedProcess.pid));
             if(record.status != 'SUCCESS'){
-                console.log(chalk.red('\u274c There seems to be some error when running ' + moduleName + ' process. Kindly consider destroying the process.'));
+                console.log(chalk.red('\u274c There seems to be some error when running ' + moduleName + ' agent. Kindly consider stopping the agent.'));
             }
             process.exit();
         })
@@ -31,7 +32,7 @@ module.exports = {
         common.deleteAllRecords(moduleName);
         
         Object.keys(allRecords).forEach(pid => {
-            console.log(chalk.green('\u2714 Process destroyed sucessfully: ' + pid));
+            console.log(chalk.green('\u2714 ' + moduleName + ' agent stopped sucessfully.\npid: ' + pid));
             
             try {
                 if (process.pid == pid) {
@@ -48,7 +49,7 @@ module.exports = {
         if(!record) return;
 
         common.deleteRecord(moduleName, pid);
-        if (!silent) console.log(chalk.green('\u2714 Process destroyed sucessfully: ' + pid));
+        if (!silent) console.log(chalk.green('\u2714 ' + moduleName + ' agent stopped sucessfully.\npid: ' + pid));
 
         try {
             if(process.pid == pid){
@@ -61,14 +62,8 @@ module.exports = {
     show: (moduleName, args) => {
         moduleName = processModuleName(moduleName);
         let moduleInstance = common.loadModule(moduleName);
-        let allRecords = common.getAllRecords(moduleName);
-        let displayRecords = [];
-        Object.values(allRecords).forEach(record => {
-            if(record.status == 'SUCCESS' || record.status == 'FAILED'){
-                displayRecords.push(record);
-            }
-        })
-        moduleInstance.display(displayRecords, args);
+        let moduleHandler = handler(moduleName);
+        moduleInstance.display(moduleHandler, args);
     }
     
 }

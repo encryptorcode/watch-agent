@@ -1,9 +1,11 @@
 const common = require('./common');
 const main = require('./main');
+const handler = require('./handler');
 
 let moduleName = process.argv[2];
 let record = JSON.parse(process.argv[3]);
 let moduleInstance = common.loadModule(moduleName);
+let moduleHandler = handler(moduleName, process.pid);
 
 record.pid = process.pid;
 common.pushRecord(moduleName, record.pid, record);
@@ -17,13 +19,27 @@ function iterate(moduleName, pid) {
     let iteration = ++record.iteration;
     let delay = record.delay;
     let times = record.times;
-    let previousRecord = record.status == 'INITIATED' ? undefined : clone(record);
 
-    let rawDataPromise = convertToPromise(moduleInstance.fetch(previousRecord, args));
-    rawDataPromise.then(rawData => {
-        let processedDataPromise = convertToPromise(moduleInstance.infer(previousRecord, args, rawData));
-        processedDataPromise.then(processedData => {
-            record.data = processedData;
+    let initDataPromise;
+    if (moduleInstance.init && record.iteration == 1) {
+        initDataPromise = convertToPromise(moduleInstance.init(moduleHandler, record.args));
+    } else {
+        initDataPromise = convertToPromise(args);
+    }
+
+    initDataPromise.then(initData => {
+        if(initData == false){
+            main.destroy(moduleName, pid, true);
+        } else {
+            record.args = initData;
+        }
+
+        let dataPromise = convertToPromise(moduleInstance.fetch(moduleHandler, initData));
+        dataPromise.then(data => {
+            if (moduleInstance.infer) {
+                moduleInstance.infer(moduleHandler, data);
+            }
+            record.data = data;
             record.status = 'SUCCESS';
             finalize(record);
         }).catch(error => {
@@ -32,11 +48,6 @@ function iterate(moduleName, pid) {
             record.status = 'FAILED';
             finalize(record);
         })
-    }).catch(error => {
-        console.trace(error);
-        record.error = error;
-        record.status = 'FAILED';
-        finalize(record);
     })
 
     function finalize(newRecord) {
@@ -60,8 +71,4 @@ function convertToPromise(obj) {
         })
     }
     return obj;
-}
-
-function clone(data){
-    return JSON.parse(JSON.stringify(data));
 }

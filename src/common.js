@@ -16,12 +16,16 @@ module.exports = {
             throw 'Watch Agent module should be an Object.';
         }
 
+        if(moduleInstance.init && !moduleInstance.init instanceof Function){
+            throw 'init() is not a function.'
+        }
+
         if (!moduleInstance.fetch || !moduleInstance.fetch instanceof Function) {
             throw 'fetch() function is not defined.'
         }
 
-        if (!moduleInstance.infer || !moduleInstance.infer instanceof Function) {
-            throw 'infer() function is not defined.'
+        if (moduleInstance.infer && !moduleInstance.infer instanceof Function) {
+            throw 'infer() is not a function.'
         }
 
         if (!moduleInstance.display || !moduleInstance.display instanceof Function) {

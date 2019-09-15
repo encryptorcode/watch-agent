@@ -10,7 +10,7 @@ if(!process.env.WATCH_AGENT_MODULES){
 }
 
 commander
-    .command('init <module> [args...]')
+    .command('start <module> [args...]')
     .option('-d, --delay <delay>', '[optional] Delay in seconds between each fetch call. 60 seconds delay if not specified.')
     .option('-t, --times <times>', '[optional] Number of times to execute. Infinite times if not specified.')
     .option('-h, --help', 'shows help about init command.')
@@ -18,7 +18,7 @@ commander
         main.init(moduleName, command.delay, command.times, args);
     });
 commander
-    .command('destroy <module> [pid]')
+    .command('stop <module> [pid]')
     .action((moduleName, pid) => {
         if(pid){
             main.destroy(moduleName, pid);
