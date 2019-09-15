@@ -1,6 +1,6 @@
 {
   "name": "watch-agent",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Make your agents on command line.",
   "main": "index.js",
   "repository": {

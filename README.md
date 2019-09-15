@@ -77,16 +77,39 @@ module.exports = {
     infer: (handler, data) => {
         /** 
          * [Optional]
-         * This method is used to preform additional operations based on data from fetch
+         * This method is used to perform additional operations based on data from fetch
          */
     },
-    display: (records, args) => {
+    display: (handler, args) => {
         /**
          * [Mandatory]
-         * You will get list of records in the method. You can use console.log to print when `wa show <module>` command is called.
+         * You can use the handler to get all records and use console.log to print when `wa show <module>` command is called.
         */
     }
 };
 ```
 
 Once this is done. You can start using watch-agent using the commmands specified.
+
+## Handler 
+We have below given method that can be called using the handler object. 
+1. `handler.getAllRecords()` - Will give you list of latest records of all agents instances of your module in an array.
+2. `handler.getPreviousRecord()` - Will get you only the previous record for the current agent instance.
+
+## Record Object
+Sample record object
+```json
+{
+    "args" : ["arg1","arg2"],
+    "iteration" : "4",
+    "status" : "SUCCESS",
+    "pid" : 2104,
+    "data" : ...
+}
+```
+
+1. args - arguments passed in start command.
+2. iteration - index of iteration currently in progress (starts from 1)
+3. status - status of the previous execution
+4. pid - os process id
+5. data - data returned from fetch operation
