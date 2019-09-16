@@ -1,19 +1,19 @@
-const common = require('./common');
-const main = require('./main');
-const handler = require('./handler');
+const common = require('./common'),
+    main = require('./main'),
+    handler = require('./handler');
 
-let moduleName = process.argv[2];
+let agentName = process.argv[2];
 let record = JSON.parse(process.argv[3]);
-let moduleInstance = common.loadModule(moduleName);
-let moduleHandler = handler(moduleName, process.pid);
+let agentInstance = common.loadAgent(agentName);
+let agentHandler = handler(agentName, process.pid);
 
 record.pid = process.pid;
-common.pushRecord(moduleName, record.pid, record);
-iterate(moduleName, record.pid);
+common.pushRecord(agentName, record.pid, record);
+iterate(agentName, record.pid);
 
-function iterate(moduleName, pid) {
+function iterate(agentName, pid) {
     
-    let record = common.getRecord(moduleName, pid);
+    let record = common.getRecord(agentName, pid);
 
     let args = record.args;
     let iteration = ++record.iteration;
@@ -21,23 +21,23 @@ function iterate(moduleName, pid) {
     let times = record.times;
 
     let initDataPromise;
-    if (moduleInstance.init && record.iteration == 1) {
-        initDataPromise = convertToPromise(moduleInstance.init(moduleHandler, record.args));
+    if (agentInstance.init && record.iteration == 1) {
+        initDataPromise = convertToPromise(agentInstance.init(agentHandler, record.args));
     } else {
         initDataPromise = convertToPromise(args);
     }
 
     initDataPromise.then(initData => {
         if(initData == false){
-            main.destroy(moduleName, pid, true);
+            main.destroy(agentName, pid, true);
         } else {
             record.args = initData;
         }
 
-        let dataPromise = convertToPromise(moduleInstance.fetch(moduleHandler, initData));
+        let dataPromise = convertToPromise(agentInstance.fetch(agentHandler, initData));
         dataPromise.then(data => {
-            if (moduleInstance.infer) {
-                moduleInstance.infer(moduleHandler, data);
+            if (agentInstance.infer) {
+                agentInstance.infer(agentHandler, data);
             }
             record.data = data;
             record.status = 'SUCCESS';
@@ -52,14 +52,14 @@ function iterate(moduleName, pid) {
 
     function finalize(newRecord) {
         record.lastExecutionTime = new Date().toLocaleString();
-        common.pushRecord(moduleName, pid, newRecord);
+        common.pushRecord(agentName, pid, newRecord);
         if (iteration == 1) {
             process.send(newRecord);
         }
         if (iteration == times) {
-            main.destroy(moduleName, pid, true);
+            main.destroy(agentName, pid, true);
         } else {
-            setTimeout(iterate, delay * 1000, moduleName, pid);
+            setTimeout(iterate, delay * 1000, agentName, pid);
         }
     }
 }

@@ -1,74 +1,74 @@
-const os = require('os');
-const path = require('path');
-const fs = require('fs');
-const mkdirp = require('mkdirp');
+const os = require('os'),
+    path = require('path'),
+    fs = require('fs'),
+    mkdirp = require('mkdirp');
 
-const WATCH_AGENT_MODULES = process.env.WATCH_AGENT_MODULES;
-const WATCH_AGENT_HOME_PATH = path.join(os.homedir(), ".watch-agent");
+const WATCH_AGENT_REPO = process.env.WATCH_AGENT_REPO;
+const WATCH_AGENT_HOME_PATH = path.join(os.homedir(), '.watch-agent');
 
 module.exports = {
-    loadModule: (moduleName) => {
+    loadAgent: (agentName) => {
         mkdirp.sync(WATCH_AGENT_HOME_PATH);
-        let filePath = path.join(WATCH_AGENT_MODULES, 'wa-'+moduleName, "index.js");
-        let moduleInstance = require(filePath);
+        let filePath = path.join(WATCH_AGENT_REPO, 'wa-'+agentName, 'index.js');
+        let agentInstance = require(filePath);
 
-        if (!moduleInstance instanceof Object) {
-            throw 'Watch Agent module should be an Object.';
+        if (!agentInstance instanceof Object) {
+            throw agentName + ' agent should be an Object.';
         }
 
-        if(moduleInstance.init && !moduleInstance.init instanceof Function){
+        if(agentInstance.init && !agentInstance.init instanceof Function){
             throw 'init() is not a function.'
         }
 
-        if (!moduleInstance.fetch || !moduleInstance.fetch instanceof Function) {
+        if (!agentInstance.fetch || !agentInstance.fetch instanceof Function) {
             throw 'fetch() function is not defined.'
         }
 
-        if (moduleInstance.infer && !moduleInstance.infer instanceof Function) {
+        if (agentInstance.infer && !agentInstance.infer instanceof Function) {
             throw 'infer() is not a function.'
         }
 
-        if (!moduleInstance.display || !moduleInstance.display instanceof Function) {
+        if (!agentInstance.display || !agentInstance.display instanceof Function) {
             throw 'display() function is not defined.'
         }
 
-        moduleInstance._name = moduleName;
-        return moduleInstance;
+        agentInstance._name = agentName;
+        return agentInstance;
     },
-    pushRecord: (moduleName, pid, data) => {
-        let moduleDataFilePath = getModuleDataFilePath(moduleName);
-        let allData = readFile(moduleDataFilePath);
+    pushRecord: (agentName, pid, data) => {
+        let agentDataFilePath = getAgentDataFilePath(agentName);
+        let allData = readFile(agentDataFilePath);
         allData[pid] = data;
-        writeFile(moduleDataFilePath, allData);
+        writeFile(agentDataFilePath, allData);
     },
-    deleteRecord: (moduleName, pid) => {
-        let moduleDataFilePath = getModuleDataFilePath(moduleName);
-        let allData = readFile(moduleDataFilePath);
+    deleteRecord: (agentName, pid) => {
+        let agentDataFilePath = getAgentDataFilePath(agentName);
+        let allData = readFile(agentDataFilePath);
         delete allData[pid];
-        writeFile(moduleDataFilePath, allData);
+        writeFile(agentDataFilePath, allData);
     },
-    deleteAllRecords: (moduleName) => {
-        let moduleDataFilePath = getModuleDataFilePath(moduleName);
-        writeFile(moduleDataFilePath, {});
+    deleteAllRecords: (agentName) => {
+        let agentDataFilePath = getAgentDataFilePath(agentName);
+        writeFile(agentDataFilePath, {});
     },
-    getRecord: (moduleName, pid) => {
-        let moduleDataFilePath = getModuleDataFilePath(moduleName);
-        let allData = readFile(moduleDataFilePath);
+    getRecord: (agentName, pid) => {
+        let agentDataFilePath = getAgentDataFilePath(agentName);
+        let allData = readFile(agentDataFilePath);
         return allData[pid];
     },
-    getAllRecords: (moduleName) => {
-        let moduleDataFilePath = getModuleDataFilePath(moduleName);
-        let allData = readFile(moduleDataFilePath);
+    getAllRecords: (agentName) => {
+        let agentDataFilePath = getAgentDataFilePath(agentName);
+        let allData = readFile(agentDataFilePath);
         return allData;
     }
 }
 
-function getModuleDataFilePath(moduleName){
-    let moduleDataFilePath = path.join(WATCH_AGENT_HOME_PATH, moduleName + '.json');
-    if (!fs.existsSync(moduleDataFilePath)) {
-        fs.writeFileSync(moduleDataFilePath, JSON.stringify({}));
+function getAgentDataFilePath(agentName){
+    let agentDataFilePath = path.join(WATCH_AGENT_HOME_PATH, agentName + '.json');
+    if (!fs.existsSync(agentDataFilePath)) {
+        fs.writeFileSync(agentDataFilePath, JSON.stringify({}));
     }
-    return moduleDataFilePath;
+    return agentDataFilePath;
 }
 function readFile(filePath){
     let fileContents = fs.readFileSync(filePath);

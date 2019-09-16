@@ -1,5 +1,12 @@
-# watch-agent using command line
-Make your agents on command line.
+# Watch Agent using command line
+A command line wrapper for monitoring, iterations and long processes
+
+So tell me
+* Have you ever thought of running a iterative process on your command line ? 
+* Has it ever been simple to develop ? 
+* Have you ever not procrastinated to develop such a script ?
+
+Watch Agent is here to rescue. It makes developing any iterative process as easy as just fetching data and showing it on command line. Just go ahead and install watch-agent start creating your own agents.
 
 ## Installation
 ```sh
@@ -10,46 +17,59 @@ Make your agents on command line.
 
 ### 1. Start an agent
 ```sh
-    wa start <module> [args...]
+    wa start <agent> [args...]
 ```
+
+agent - name of the agent
+
+args - agruments to be passed for agent to start an instance
+
 #### Options:
 * -d, --delay   [optional] Delay in seconds between each fetch call. 60 seconds delay if not specified.
 * -t, --times   [optional] Number of times to execute. Infinite times if not specified.
 
 ### 2. Stop an agent
 ```sh
-    wa stop <module> <pid>
+    wa stop <agent> <pid>
 ```
+
+agent - name of the agent
+
+pid - process id of the agent to be stopped
 
 ### 3. Show running agent details
 ```sh
-    wa show <module> [args...]
+    wa show <agent> [args...]
 ```
 
-## Making modules
+agent - name of the agent
 
-**Step 1:** Create a directory and add that directory in env variable `WATCH_AGENT_MODULES`. Recommended is to add this variable to .bash_profile for linux and mac systems. And system path for windows application
+args - arguments to be passed for agent to show data
+
+## Making your own agents
+
+**Step 1:** Create a directory and add that directory in env variable `WATCH_AGENT_REPO`. Recommended is to add this variable to .bash_profile for linux and mac systems. And system path for windows application
 ```sh
-export WATCH_AGENT_MODULES=~/watch-agent-modules
+export WATCH_AGENT_REPO=~/watch-agent-repo
 ```
 
-**Step 2:** Create sub directories inside that folder with the name of the module prefixed with `wa-`.
+**Step 2:** Create sub directories inside that folder with the name of the agent prefixed with `wa-`.
 
 **Sample directory structure**
 ```
 .
-├── common                  --> Common code required for all the modules
+├── common                  --> Common code required for all the agents
 │   ├── http-client.js
 │   └── prompt.js
 ├── node_modules            --> Node imports
 │   └── **
 ├── package-lock.json
 ├── package.json            --> Node package.json
-├── wa-module1              --> Module directory
+├── wa-agent1               --> Agent directory
 │   └── index.js            --> index.js file which `watch-agent` will
-├── wa-module2                  invoke with `wa start module1`
+├── wa-agent2                   invoke with `wa start agent1`
 │   └── index.js
-└── wa-module3
+└── wa-agent3
     └── index.js
 ```
 
@@ -83,7 +103,7 @@ module.exports = {
     display: (handler, args) => {
         /**
          * [Mandatory]
-         * You can use the handler to get all records and use console.log to print when `wa show <module>` command is called.
+         * You can use the handler to get all records and use console.log to print when `wa show <agent>` command is called.
         */
     }
 };
@@ -93,7 +113,7 @@ Once this is done. You can start using watch-agent using the commmands specified
 
 ## Handler 
 We have below given method that can be called using the handler object. 
-1. `handler.getAllRecords()` - Will give you list of latest records of all agents instances of your module in an array.
+1. `handler.getAllRecords()` - Will give you list of latest records of all instances of your agent in an array.
 2. `handler.getPreviousRecord()` - Will get you only the previous record for the current agent instance.
 
 ## Record Object
