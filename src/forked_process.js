@@ -29,7 +29,7 @@ function iterate(agentName, pid) {
 
     initDataPromise.then(initData => {
         if(initData == false){
-            main.destroy(agentName, pid, true);
+            main.stop(agentName, pid, true);
         } else {
             record.args = initData;
         }
